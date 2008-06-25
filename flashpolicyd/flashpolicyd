@@ -325,6 +325,7 @@ class PolicyServer
           
             rescue Exception => e
               error("Unexpected exception while handling client connection: #{e}")
+              error("Unexpected exception while handling client connection: #{e.backtrace.join("\n")}")
               client.close
             end # block around main logic 
           end # while
@@ -411,7 +412,7 @@ daemonize do
     end
   rescue Exception => e
     logger.fatal("Unexpected exit from main loop: #{e}")
-    logger.fatal("Unexpected exit from main loop: #{e.backtrace}")
+    logger.fatal("Unexpected exit from main loop: #{e.backtrace.join("\n")}")
   end
   
   logger.info("Server process #{$$} shutting down")
