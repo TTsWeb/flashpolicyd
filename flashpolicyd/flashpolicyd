@@ -324,7 +324,7 @@ class PolicyServer
               }
           
             rescue Exception => e
-              error("#{e}")
+              error("Unexpected exception while handling client connection: #{e}")
               client.close
             end # block around main logic 
           end # while
