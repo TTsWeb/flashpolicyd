@@ -56,12 +56,12 @@ require "timeout"
 require 'getoptlong'
 
 opts = GetoptLong.new(
-	  [ '--xml', GetoptLong::REQUIRED_ARGUMENT],
-	  [ '--verbose', '-v', GetoptLong::NO_ARGUMENT],
-	  [ '--timeout', '-t', GetoptLong::OPTIONAL_ARGUMENT],
-  	[ '--logfreq', '-l', GetoptLong::OPTIONAL_ARGUMENT],
+    [ '--xml', GetoptLong::REQUIRED_ARGUMENT],
+    [ '--verbose', '-v', GetoptLong::NO_ARGUMENT],
+    [ '--timeout', '-t', GetoptLong::OPTIONAL_ARGUMENT],
+    [ '--logfreq', '-l', GetoptLong::OPTIONAL_ARGUMENT],
     [ '--logfile', GetoptLong::REQUIRED_ARGUMENT],
-  	[ '--help', '-h', GetoptLong::NO_ARGUMENT]
+    [ '--help', '-h', GetoptLong::NO_ARGUMENT]
 )
 
 # defaults before parsing command line
@@ -73,42 +73,42 @@ xmlfile = ""
 logfile = ""
 
 opts.each { |opt, arg|
-	case opt
-		when '--help'
-			begin
-				require 'rdoc/ri/ri_paths'
-				require 'rdoc/usage'
-				RDoc::usage
-			rescue Exception => e
-				puts("Install RDoc::usage or view the comments in the top of the script to get detailed help")
-			end
+  case opt
+    when '--help'
+      begin
+        require 'rdoc/ri/ri_paths'
+        require 'rdoc/usage'
+        RDoc::usage
+      rescue Exception => e
+        puts("Install RDoc::usage or view the comments in the top of the script to get detailed help")
+      end
 
-			exit
-		when '--xml'
-			xmlfile = arg
-		when '--verbose'
-			@verbose = true
-		when '--maxclients'
-			@maxclients = arg
-		when '--logfreq'
-			@logfreq = arg
-		when '--timeout'
-			@timeout = arg
-		when '--logfile'
-		  logfile = arg
-	end
+      exit
+    when '--xml'
+      xmlfile = arg
+    when '--verbose'
+      @verbose = true
+    when '--maxclients'
+      @maxclients = arg
+    when '--logfreq'
+      @logfreq = arg
+    when '--timeout'
+      @timeout = arg
+    when '--logfile'
+      logfile = arg
+  end
 }
 
 # Read the xml data into a string
 if (xmlfile.length > 0 and File.exists?(xmlfile))
-	begin
-		@xmldata = IO.read(xmlfile)
-	rescue Exception => e
-		puts "Exception: #{e}"
-	end
+  begin
+    @xmldata = IO.read(xmlfile)
+  rescue Exception => e
+    puts "Exception: #{e}"
+  end
 else
-	puts("Pass the path to the xml file to serve using --xml, see --help for detailed help")
-	exit
+  puts("Pass the path to the xml file to serve using --xml, see --help for detailed help")
+  exit
 end
 
 # create a logger keeping 10 files of 1MB each
@@ -217,11 +217,11 @@ class PolicyServer
   end
 
   # Dump the current thread list
-	def dumpthreads 
-		Thread.list.each {|t|
-			info("Thread: #{t.id} status #{t.status}")
-		}
-	end
+  def dumpthreads 
+    Thread.list.each {|t|
+      info("Thread: #{t.id} status #{t.status}")
+    }
+  end
 
   # Prints some basic stats about the server so far, bogus client are ones that timeout or otherwise cause problems
   def printstats
@@ -230,16 +230,16 @@ class PolicyServer
     info("Had #{@@totalclients} clients of which #{@@bogusclients} were bogus. Uptime #{u[0]} days #{u[1]} hours #{u[2]} min. #{@connections.size} connection(s) in use now.")
   end
   
-	# Logs a message passed to it and increment the bogus client counter inside a mutex
-	def bogusclient(msg, client)
-	  addr = client.addr
-	  
+  # Logs a message passed to it and increment the bogus client counter inside a mutex
+  def bogusclient(msg, client)
+    addr = client.addr
+    
     warn("Client #{addr[2]} [#{addr[3]}] #{msg}")
 
-		@@clientsMutex.synchronize {
-			@@bogusclients += 1
-		}
-	end
+    @@clientsMutex.synchronize {
+      @@bogusclients += 1
+    }
+  end
   
   # The main logic of client handling, waits for @timeout seconds to receive a null terminated
   # request containing "policy-file-request" and sends back the data, else marks the client as
@@ -249,28 +249,28 @@ class PolicyServer
   def serve(connection)
     client = connection.client
         
-		# Flash clients send a null terminate request
-		$/ = "\000"
+    # Flash clients send a null terminate request
+    $/ = "\000"
 
-		# run this in a timeout block, clients will have --timeout seconds to complete the transaction or go away
-		begin
-			timeout(@timeout.to_i) do
-				loop do
-					request = client.gets
+    # run this in a timeout block, clients will have --timeout seconds to complete the transaction or go away
+    begin
+      timeout(@timeout.to_i) do
+        loop do
+          request = client.gets
 
-					if request =~ /policy-file-request/
-						client.puts(@xml)
-						
-						debug("Sent xml data to client")
-						break
-					end
-				end
-			end
-		rescue Timeout::Error
-			bogusclient("connection timed out after #{@timeout} seconds", connection)
-		rescue Exception => e
-			bogusclient("Unexpected exception: #{e}", connection)
-		end
+          if request =~ /policy-file-request/
+            client.puts(@xml)
+            
+            debug("Sent xml data to client")
+            break
+          end
+        end
+      end
+    rescue Timeout::Error
+      bogusclient("connection timed out after #{@timeout} seconds", connection)
+    rescue Exception => e
+      bogusclient("Unexpected exception: #{e}", connection)
+    end
   end
   
   # === Synopsis
@@ -301,6 +301,7 @@ class PolicyServer
               @@clientsMutex.synchronize {
                 @@totalclients += 1
               }
+
               connection = OpenStruct.new
               connection.client = client
               connection.timecreated = Time.new
@@ -338,37 +339,37 @@ end
 # Goes into the background, chdir's to /tmp, and redirect all input/output to null
 # Beginning Ruby p. 489-490
 def daemonize
-	fork do
-		Process.setsid
-		exit if fork
-		Dir.chdir('/tmp')
-		STDIN.reopen('/dev/null')
-		STDOUT.reopen('/dev/null', 'a')
-		STDERR.reopen('/dev/null', 'a')
+  fork do
+    Process.setsid
+    exit if fork
+    Dir.chdir('/tmp')
+    STDIN.reopen('/dev/null')
+    STDOUT.reopen('/dev/null', 'a')
+    STDERR.reopen('/dev/null', 'a')
 
-		trap("TERM") { 
-		  logger.debug("Caught TERM signal") 
-		  exit
-		}
-		yield
-	end
+    trap("TERM") { 
+      logger.debug("Caught TERM signal") 
+      exit
+    }
+    yield
+  end
 end
 
 # Returns an array of days, hrs, mins and seconds given a second figure
 # The Ruby Way - Page 227
 def sec2dhms(secs)
-	time = secs.round
-	sec = time % 60
-	time /= 60
-	
-	mins = time % 60
-	time /= 60
+  time = secs.round
+  sec = time % 60
+  time /= 60
+  
+  mins = time % 60
+  time /= 60
 
-	hrs = time % 24
-	time /= 24
+  hrs = time % 24
+  time /= 24
 
-	days = time
-	[days, hrs, mins, sec]
+  days = time
+  [days, hrs, mins, sec]
 end
 
 # Go into the background and initalizes the server, sets up some signal handlers and print stats
