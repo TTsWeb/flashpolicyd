@@ -26,7 +26,7 @@
 #   Show Help
 #
 # --verbose
-#   Turns on verbose logging to syslog
+#   Turns on verbose logging to log file
 #
 # --xml
 #   XML File to Serve to clients, read at startup only
@@ -36,7 +36,7 @@
 #   default is 10 seconds
 #
 # --logfreq, -l
-#   How often to log stats to syslog, default 1800 seconds
+#   How often to log stats to log file, default 1800 seconds
 #
 # --logfile
 #   Where to write log lines too
