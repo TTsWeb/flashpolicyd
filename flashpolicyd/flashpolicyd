@@ -104,7 +104,8 @@ if (xmlfile.length > 0 and File.exists?(xmlfile))
   begin
     @xmldata = IO.read(xmlfile)
   rescue Exception => e
-    puts "Exception: #{e}"
+    puts "Got exception #{e.class} #{e} while reading #{xmlfile}"
+    exit
   end
 else
   puts("Pass the path to the xml file to serve using --xml, see --help for detailed help")
@@ -114,8 +115,8 @@ end
 # create a logger keeping 10 files of 1MB each
 begin
   @logger = Logger.new(logfile, 10, 102400)
-rescue
-  puts("Can't create log file #{logfile}")
+rescue Exception => e
+  puts("Got #{e.class} #{e} while attempting to create logfile #{logfile}")
   exit
 end
 
@@ -183,7 +184,7 @@ class PolicyServer
 
     if debug
       @logger.level = Logger::DEBUG
-      debug("Set logging level to #{@logger.level}")
+      debug("Starting in DEBUG mode")
     else
       @logger.level = Logger::INFO
     end
@@ -194,11 +195,9 @@ class PolicyServer
     if (@logger.debug?)
       @logger.level = Logger::INFO
       info("Set logging level to INFO")
-      Thread.abort_on_exception = false
     else
       @logger.level = Logger::DEBUG
       info("Set logging level to DEBUG")
-      Thread.abort_on_exception = true
     end
   end
   
@@ -207,9 +206,11 @@ class PolicyServer
     if (@connections.size == 0)
       info("No active connections to dump")
     else 
-      info("Dumping current #{@connections.size} connections:")
+      connections = @connections
+      
+      info("Dumping current #{connections.size} connections:")
     
-      @connections.each{ |c|
+      connections.each{ |c|
         addr = c.addr
         info("#{c.thread.object_id} started at #{c.timecreated} currently in #{c.thread.status} status serving #{addr[2]} [#{addr[3]}]")
       }
@@ -227,7 +228,7 @@ class PolicyServer
   def printstats
     u = sec2dhms(Time.new - @@starttime)
     
-    info("Had #{@@totalclients} clients of which #{@@bogusclients} were bogus. Uptime #{u[0]} days #{u[1]} hours #{u[2]} min. #{@connections.size} connection(s) in use now.")
+    info("Had #{@@totalclients} clients and #{@@bogusclients} bogus clients. Uptime #{u[0]} days #{u[1]} hours #{u[2]} min. #{@connections.size} connection(s) in use now.")
   end
   
   # Logs a message passed to it and increment the bogus client counter inside a mutex
@@ -289,7 +290,7 @@ class PolicyServer
       BasicSocket::do_not_reverse_lookup=true
       server = TCPServer.new(@host, @port)
     rescue Exception => e
-      fatal("Can't open server: #{e}")
+      fatal("Can't open server: #{e.class} #{e}")
       exit
     end
     
@@ -325,6 +326,8 @@ class PolicyServer
                 debug("Removed connection from @connections, now #{@connections.size} connections")
               }
           
+            rescue Errno::ENOTCONN => e
+              warn("Client disconnected before we finished handling the connection: #{e.class} #{e}")
             rescue Exception => e
               error("Unexpected #{e.class} exception while handling client connection: #{e}")
               error("Unexpected #{e.class} exception while handling client connection: #{e.backtrace.join("\n")}")
