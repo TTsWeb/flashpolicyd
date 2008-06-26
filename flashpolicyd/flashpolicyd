@@ -26,7 +26,7 @@
 #   Show Help
 #
 # --verbose
-#   Turns on verbose logging to log file
+#   Turns on verbose logging to log file - can also be turned on and off at runtime using -HUP signals
 #
 # --xml
 #   XML File to Serve to clients, read at startup only
