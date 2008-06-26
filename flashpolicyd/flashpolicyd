@@ -269,7 +269,7 @@ class PolicyServer
     rescue Timeout::Error
       bogusclient("connection timed out after #{@timeout} seconds", connection)
     rescue Exception => e
-      bogusclient("Unexpected exception: #{e}", connection)
+      bogusclient("Unexpected #{e.class} exception: #{e}", connection)
     end
   end
   
@@ -324,15 +324,15 @@ class PolicyServer
               }
           
             rescue Exception => e
-              error("Unexpected exception while handling client connection: #{e}")
-              error("Unexpected exception while handling client connection: #{e.backtrace.join("\n")}")
+              error("Unexpected #{e.class} exception while handling client connection: #{e}")
+              error("Unexpected #{e.class} exception while handling client connection: #{e.backtrace.join("\n")}")
               client.close
             end # block around main logic 
           end # while
         end # around Thread.new for client connections
       } # @serverThread
     rescue Exception => e
-      fatal("Got exception in main listening thread: #{e}")
+      fatal("Got #{e.class} exception in main listening thread: #{e}")
     end
   end    
 end
@@ -411,8 +411,8 @@ daemonize do
       server.printstats
     end
   rescue Exception => e
-    logger.fatal("Unexpected exit from main loop: #{e}")
-    logger.fatal("Unexpected exit from main loop: #{e.backtrace.join("\n")}")
+    logger.fatal("Unexpected exception #{e.class} from main loop: #{e}")
+    logger.fatal("Unexpected exception #{e.class} from main loop: #{e.backtrace.join("\n")}")
   end
   
   logger.info("Server process #{$$} shutting down")
