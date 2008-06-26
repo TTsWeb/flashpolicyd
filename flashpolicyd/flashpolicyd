@@ -234,7 +234,7 @@ class PolicyServer
   def bogusclient(msg, client)
     addr = client.addr
     
-    warn("Client #{addr[2]} [#{addr[3]}] #{msg}")
+    warn("Client #{addr[2]} #{msg}")
 
     @@clientsMutex.synchronize {
       @@bogusclients += 1
@@ -298,7 +298,7 @@ class PolicyServer
         while (session = server.accept)
           Thread.new(session) do |client| 
             begin 
-              debug("Handling new connection from #{client.peeraddr[2]} [#{client.peeraddr[3]}], #{Thread.list.size} total threads ")
+              debug("Handling new connection from #{client.peeraddr[2]}, #{Thread.list.size} total threads ")
 
               @@clientsMutex.synchronize {
                 @@totalclients += 1
