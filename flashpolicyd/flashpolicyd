@@ -176,8 +176,10 @@ class PolicyServer
   # Toggles the @debug variable that is used in the debug method
   def toggledebug
     if @debug
+      Syslog.info("Turning off debug mode")
       @debug = false
     else
+      Syslog.info("Turning on debug mode")
       @debug = true
     end
   end
