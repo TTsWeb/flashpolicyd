@@ -113,7 +113,7 @@ end
 
 # create a logger keeping 10 files of 1MB each
 begin
-  logger = Logger.new(logfile, 10, 102400)
+  @logger = Logger.new(logfile, 10, 102400)
 rescue
   puts("Can't create log file #{logfile}")
   exit
@@ -351,7 +351,7 @@ def daemonize
     STDERR.reopen('/dev/null', 'a')
 
     trap("TERM") { 
-      logger.debug("Caught TERM signal") 
+      @logger.debug("Caught TERM signal") 
       exit
     }
     yield
@@ -379,17 +379,10 @@ end
 # every @logfreq seconds, any exceptions gets logged and exits the server
 daemonize do
   begin
-    logger.info("Starting server on port 843 in process #{$$}")
+    @logger.info("Starting server on port 843 in process #{$$}")
     
-    server = PolicyServer.new(843, "0.0.0.0", @xmldata, logger, @timeout, @verbose)
+    server = PolicyServer.new(843, "0.0.0.0", @xmldata, @logger, @timeout, @verbose)
     server.start
-    
-    
-    # send a TERM to shut down the whole server
-    trap("TERM") { 
-      logger.info("Caught TERM signal")
-      exit
-    }
 
     # Send HUP to toggle debug mode or not for a running server
     trap("HUP") {
@@ -412,10 +405,12 @@ daemonize do
       sleep @logfreq.to_i
       server.printstats
     end
+  rescue SystemExit => e
+    @logger.fatal("Shutting down main daemon thread due to: #{e.class} #{e}")
   rescue Exception => e
-    logger.fatal("Unexpected exception #{e.class} from main loop: #{e}")
-    logger.fatal("Unexpected exception #{e.class} from main loop: #{e.backtrace.join("\n")}")
+    @logger.fatal("Unexpected exception #{e.class} from main loop: #{e}")
+    @logger.fatal("Unexpected exception #{e.class} from main loop: #{e.backtrace.join("\n")}")
   end
   
-  logger.info("Server process #{$$} shutting down")
+  @logger.info("Server process #{$$} shutting down")
 end
