@@ -285,6 +285,8 @@ class PolicyServer
   # 1. Once handling completes, remove the connection from the active list and close the socket
   def start
     begin
+      # Disable reverse lookups, makes it all slow down
+      BasicSocket::do_not_reverse_lookup=false
       server = TCPServer.new(@host, @port)
     rescue Exception => e
       fatal("Can't open server: #{e}")
