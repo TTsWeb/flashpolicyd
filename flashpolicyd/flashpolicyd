@@ -327,7 +327,9 @@ class PolicyServer
               }
           
             rescue Errno::ENOTCONN => e
-              warn("Client disconnected before we finished handling the connection: #{e.class} #{e}")
+              warn("Unexpected disconnection while handling request")
+            rescue Errno::ECONNRESET => e
+              warn("Connection reset by peer")
             rescue Exception => e
               error("Unexpected #{e.class} exception while handling client connection: #{e}")
               error("Unexpected #{e.class} exception while handling client connection: #{e.backtrace.join("\n")}")
