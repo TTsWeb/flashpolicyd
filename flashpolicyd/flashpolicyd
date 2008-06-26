@@ -38,9 +38,6 @@
 # --logfreq, -l
 #   How often to log stats to log file, default 1800 seconds
 #
-# --logfile
-#   Where to write log lines too
-#
 # == Download and Further Information
 # Latest versions, installation documentation and other related info can be found
 # at http://www.devco.net/pubwiki/FlashPolicyd
@@ -49,18 +46,17 @@
 # R.I.Pienaar <rip@devco.net>
 
 require "socket"
-require "logger"
 require "ostruct"
 require "thread"
 require "timeout"
-require 'getoptlong'
+require "getoptlong"
+require "syslog"
 
 opts = GetoptLong.new(
     [ '--xml', GetoptLong::REQUIRED_ARGUMENT],
     [ '--verbose', '-v', GetoptLong::NO_ARGUMENT],
     [ '--timeout', '-t', GetoptLong::OPTIONAL_ARGUMENT],
     [ '--logfreq', '-l', GetoptLong::OPTIONAL_ARGUMENT],
-    [ '--logfile', GetoptLong::REQUIRED_ARGUMENT],
     [ '--help', '-h', GetoptLong::NO_ARGUMENT]
 )
 
@@ -70,7 +66,6 @@ opts = GetoptLong.new(
 @timeout = 10
 @logfreq = 1800
 xmlfile = ""
-logfile = ""
 
 opts.each { |opt, arg|
   case opt
@@ -113,42 +108,37 @@ end
 
 # create a logger keeping 10 files of 1MB each
 begin
-  @logger = Logger.new(logfile, 10, 102400)
+  @logger = Syslog.open("flashpolicyd")
 rescue
-  puts("Can't create log file #{logfile}")
+  puts("Can't create logger: #{e.class} #{e}")
   exit
 end
 
 
 class PolicyServer
-  # Generic logging method that takes a severity constant from the Logger class such as Logger::DEBUG
-  def log(severity, msg)
-    @logger.add(severity) { "#{Thread.current.object_id}: #{msg}" }
-  end
-  
   # Log a msg at level INFO
   def info(msg)
-    log(Logger::INFO, msg)
+    Syslog.info("#{Thread.current.object_id}: #{msg}")
   end
   
   # Log a msg at level WARN
   def warn(msg)
-    log(Logger::WARN, msg)
+    Syslog.warning("#{Thread.current.object_id}: #{msg}")
   end
   
   # Log a msg at level DEBUG
   def debug(msg)
-    log(Logger::DEBUG, msg)
+    Syslog.info("#{Thread.current.object_id}: #{msg}") if @debug
   end
   
   # Log a msg at level FATAL
   def fatal(msg)
-    log(Logger::FATAL, msg)
+    Syslog.crit("#{Thread.current.object_id}: #{msg}")
   end
   
   # Log a msg at level ERROR
   def error(msg)
-    log(Logger::ERROR, msg)
+    Syslog.err("#{Thread.current.object_id}: #{msg}")
   end
   
   # === Synopsis
@@ -180,25 +170,15 @@ class PolicyServer
     @xml = xml
     @port = port
     @host = host
-
-    if debug
-      @logger.level = Logger::DEBUG
-      debug("Set logging level to #{@logger.level}")
-    else
-      @logger.level = Logger::INFO
-    end
+    @debug = debug
   end
   
-  # If the logger instanse is in DEBUG mode, put it into INFO and vica versa
+  # Toggles the @debug variable that is used in the debug method
   def toggledebug
-    if (@logger.debug?)
-      @logger.level = Logger::INFO
-      info("Set logging level to INFO")
-      Thread.abort_on_exception = false
+    if @debug
+      @debug = false
     else
-      @logger.level = Logger::DEBUG
-      info("Set logging level to DEBUG")
-      Thread.abort_on_exception = true
+      @debug = true
     end
   end
   
@@ -351,7 +331,7 @@ def daemonize
     STDERR.reopen('/dev/null', 'a')
 
     trap("TERM") { 
-      @logger.debug("Caught TERM signal") 
+      Syslog.info("Caught TERM signal") 
       exit
     }
     yield
@@ -379,7 +359,7 @@ end
 # every @logfreq seconds, any exceptions gets logged and exits the server
 daemonize do
   begin
-    @logger.info("Starting server on port 843 in process #{$$}")
+    Syslog.info("Starting server on port 843 in process #{$$}")
     
     server = PolicyServer.new(843, "0.0.0.0", @xmldata, @logger, @timeout, @verbose)
     server.start
@@ -406,11 +386,11 @@ daemonize do
       server.printstats
     end
   rescue SystemExit => e
-    @logger.fatal("Shutting down main daemon thread due to: #{e.class} #{e}")
+    Syslog.crit("Shutting down main daemon thread due to: #{e.class} #{e}")
   rescue Exception => e
-    @logger.fatal("Unexpected exception #{e.class} from main loop: #{e}")
-    @logger.fatal("Unexpected exception #{e.class} from main loop: #{e.backtrace.join("\n")}")
+    Syslog.crit("Unexpected exception #{e.class} from main loop: #{e}")
+    Syslog.crit("Unexpected exception #{e.class} from main loop: #{e.backtrace.join("\n")}")
   end
   
-  @logger.info("Server process #{$$} shutting down")
+  Syslog.info("Server process #{$$} shutting down")
 end
