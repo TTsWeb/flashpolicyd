@@ -269,6 +269,10 @@ class PolicyServer
       end
     rescue Timeout::Error
       bogusclient("connection timed out after #{@timeout} seconds", connection)
+    rescue Errno::ENOTCONN => e
+      warn("Unexpected disconnection while handling request")
+    rescue Errno::ECONNRESET => e
+      warn("Connection reset by peer")
     rescue Exception => e
       bogusclient("Unexpected #{e.class} exception: #{e}", connection)
     end
