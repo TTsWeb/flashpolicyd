@@ -18,7 +18,7 @@ RETVAL=0
 TIMEOUT=10
 XML=/etc/flashpolicy.xml
 LOGFREQ=1800
-LOGFILE=/var/log/flashpolicy.log
+LOGFILE=/var/log/flashpolicyd.log
 
 if [ -r /etc/sysconfig/$prog ]; then
 	source /etc/sysconfig/$prog
