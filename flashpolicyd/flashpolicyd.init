@@ -16,7 +16,6 @@ prog="flashpolicyd"
 # these can be overrode in /etc/sysconfig/flashpolicyd
 RETVAL=0
 TIMEOUT=10
-MAXCLIENTS=100
 XML=/etc/flashpolicy.xml
 LOGFREQ=1800
 LOGFILE=/var/log/flashpolicy.log
@@ -27,7 +26,7 @@ fi
 
 start() {
 	echo -n $"Starting $desc ($prog): "
-	daemon --check=$prog /usr/sbin/${prog} --timeout=${TIMEOUT} --xml=${XML} --maxclients=${MAXCLIENTS} --logfreq=${LOGFREQ} --logfile=${LOGFILE}
+	daemon --check=$prog /usr/sbin/${prog} --timeout=${TIMEOUT} --xml=${XML} --logfreq=${LOGFREQ} --logfile=${LOGFILE}
 	RETVAL=$?
 	echo 
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
