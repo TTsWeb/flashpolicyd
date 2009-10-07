@@ -1,4 +1,5 @@
 #summary Introduction
+#labels Featured
 
 = Introduction =
 A recent upgrade to Adobe Flash introduced an "improvement" to their security model that requires you to run a special service on port 843 serving up XML, more information about this insanity can be found [http://www.adobe.com/devnet/flashplayer/articles/fplayer9_security_04.html here].
