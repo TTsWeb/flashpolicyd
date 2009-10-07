@@ -12,6 +12,9 @@ I have tested this daemon using 5 parallel running loops doing requests in paral
 
 The code has been in production with uptimes of over a year and has proven to be stable, fast and without memory leaks or any undesired side effects.  I serve up millions of requests a year using this with no ill effects
 
+== Status ==
+As mentioned this code has been run in production and proven to be both stable and feature complete for my needs, I do not anticipate future releases unless someone file specific feature requests or Adobe changes their standards.
+
 == Download ==
 The latest version can be found [http://code.google.com/p/flashpolicyd/downloads/list here], subscribe to my blog at [http://www.devco.net/] to get updates of new releases.  Ruby RDoc documentation for the code can be read [http://www.devco.net/code/flashpolicyd-doc-2.0/ here].
 
