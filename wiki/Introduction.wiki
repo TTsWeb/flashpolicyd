@@ -1,4 +1,4 @@
-#summary Introduction
+﻿#summary Introduction
 #labels Featured
 
 = Introduction =
@@ -48,6 +48,7 @@ TIMEOUT=10
 XML=/etc/flashpolicy.xml
 LOGFREQ=1800
 LOGFILE=/var/log/flashpolicyd.log
+USER=nobody
 }}}
 
 ||||*RC Script Configuration*||
@@ -55,6 +56,7 @@ LOGFILE=/var/log/flashpolicyd.log
 ||XML||The file to serve up to clients||
 ||LOGFREQ||This is a frequency in seconds that the server will log general stats to log file||
 ||LOGFILE||The logfile to write, the file will auto rotate based on size, you should not be rotating it with your systems logrotation tool||
+||USER||The user to run as after opening the port||
 
 If you are a [http://reductivelabs.com/projects/puppet/ Puppet] user I've also included a module that will install this for you, locations etc are correct as for Red Hat Enterprise, see the puppet subdirectory.
 
@@ -94,5 +96,6 @@ You can extend the timeout using the _--timeout_ option to the check script.  Ma
 There is currently only 1 known issue, on older versions of Ruby such as 1.8.1 which you will find in Red Hat Enterprise 4 the logfile does not open in line buffered mode when it rotates, no patch from Red Hat is forthcoming.
  
 == Changes ==
+||2010/02/09||Add an option to run as a specific user - issue #2||
 ||2008/06/27||Version 2 released, a complete rewrite due to problems with GServer||
 ||2008/06/22||Initial Release||
